@@ -137,6 +137,11 @@ namespace FedExShipping
                                 ExecStatusinfo += $"PO No# {dr.ItemArray[0].ToString()}     Order No# {dr.ItemArray[1].ToString()}   " +
                                     $"TrackingId# {TrackingId}   Status # Failed Exception ::{Ex.Message} \r\n\r\n";
                             }
+                            finally
+                            {
+                                ExecStatusinfo += $"\r\n\r\n---------------------------------------------------------------------" +
+                                    $"-------------------------\r\n\r\n";
+                            }
                         }
                         else
                         {

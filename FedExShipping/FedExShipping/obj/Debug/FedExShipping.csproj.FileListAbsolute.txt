@@ -11,3 +11,16 @@ C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShippin
 C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.exe
 C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.pdb
 C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csprojResolveAssemblyReference.cache
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\FedExShipping.exe.config
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\FedExShipping.exe
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\FedExShipping.pdb
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\Excel.dll
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\ICSharpCode.SharpZipLib.dll
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\Excel.pdb
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csprojResolveAssemblyReference.cache
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.FedExForm.resources
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.Properties.Resources.resources
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csproj.GenerateResource.Cache
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csproj.CoreCompileInputs.cache
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.exe
+G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.pdb
