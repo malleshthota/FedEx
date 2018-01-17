@@ -1,0 +1,13 @@
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\bin\Debug\FedExShipping.exe.config
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\bin\Debug\FedExShipping.exe
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\bin\Debug\FedExShipping.pdb
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\bin\Debug\Excel.dll
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\bin\Debug\ICSharpCode.SharpZipLib.dll
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\bin\Debug\Excel.pdb
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.FedExForm.resources
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.Properties.Resources.resources
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csproj.GenerateResource.Cache
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csproj.CoreCompileInputs.cache
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.exe
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.pdb
+C:\Users\lenovo\documents\visual studio 2017\Projects\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csprojResolveAssemblyReference.cache
