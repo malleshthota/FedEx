@@ -17,7 +17,6 @@ G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\FedExShippi
 G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\Excel.dll
 G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\ICSharpCode.SharpZipLib.dll
 G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\bin\Debug\Excel.pdb
-G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csprojResolveAssemblyReference.cache
 G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.FedExForm.resources
 G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.Properties.Resources.resources
 G:\Mallesh\Coding\FedEx_GitDev\FedExShipping\FedExShipping\obj\Debug\FedExShipping.csproj.GenerateResource.Cache
