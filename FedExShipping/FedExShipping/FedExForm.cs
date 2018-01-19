@@ -24,6 +24,9 @@ namespace FedExShipping
         DataTable table;
         string ExecStatusinfo = string.Empty;
         static string TrackingId = string.Empty;
+        static bool _IsSucceded = false;
+        static string _FailReason = string.Empty;
+
         public FedExForm()
         {
             InitializeComponent();
@@ -128,19 +131,29 @@ namespace FedExShipping
                         {
                             try
                             {
+                                _IsSucceded = false;
+                                _FailReason = string.Empty;
                                 FedExOperations(dr);
-                                ExecStatusinfo += $"PO No# {dr.ItemArray[0].ToString()}     Order No# {dr.ItemArray[1].ToString()}  " +
-                                    $"TrackingId# {TrackingId}     Status # Success \r\n\r\n";
+                                if (_IsSucceded)
+                                {
+                                    ExecStatusinfo += $"PO No# {dr.ItemArray[0].ToString()}     Order No# {dr.ItemArray[1].ToString()}  " +
+                                    $"TrackingId# {TrackingId}     Status # Success \r\n";
+                                }
+                                else
+                                {
+                                    ExecStatusinfo += $"PO No# {dr.ItemArray[0].ToString()}     Order No# {dr.ItemArray[1].ToString()}  " +
+                                   $"TrackingId# {TrackingId}     Status # Failed   Reason#  {_FailReason} \r\n";
+                                }
                             }
                             catch (Exception Ex)
                             {
                                 ExecStatusinfo += $"PO No# {dr.ItemArray[0].ToString()}     Order No# {dr.ItemArray[1].ToString()}   " +
-                                    $"TrackingId# {TrackingId}   Status # Failed Exception ::{Ex.Message} \r\n\r\n";
+                                    $"TrackingId# {TrackingId}   Status # Failed Exception ::{Ex.Message} \r\n";
                             }
                             finally
                             {
-                                ExecStatusinfo += $"\r\n\r\n---------------------------------------------------------------------" +
-                                    $"-------------------------\r\n\r\n";
+                                ExecStatusinfo += $"\r\n---------------------------------------------------------------------" +
+                                    $"-------------------------\r\n";
                             }
                         }
                         else
@@ -243,7 +256,13 @@ namespace FedExShipping
                 ProcessShipmentReply reply = service.processShipment(request);
                 if (reply.HighestSeverity == NotificationSeverityType.SUCCESS || reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
                 {
+                    _IsSucceded = true;
                     ShowShipmentReply(isCodShipment, reply, txtLblPath.Text);
+                }
+                else
+                {
+                    _IsSucceded = false;
+                    _FailReason += reply.Notifications[0].Message;
                 }
                 ShowNotifications(reply);
             }
@@ -302,7 +321,7 @@ namespace FedExShipping
                                                                                                               //
             request.Version = new VersionId();
             //
-            SetShipmentDetails(request);
+            SetShipmentDetails(request, dr);
             //
             SetSender(request);
             //
@@ -317,15 +336,14 @@ namespace FedExShipping
             return request;
         }
 
-        private static void SetShipmentDetails(ProcessShipmentRequest request)
+        private static void SetShipmentDetails(ProcessShipmentRequest request, DataRow dr)
         {
             request.RequestedShipment = new RequestedShipment();
             request.RequestedShipment.ShipTimestamp = DateTime.Now; // Ship date and time
             request.RequestedShipment.ServiceType = ServiceType.FEDEX_GROUND; // Service types are FEDEX_GROUND, GROUND_HOME_DELIVERY ...
             request.RequestedShipment.PackagingType = PackagingType.YOUR_PACKAGING; // Packaging type YOUR_PACKAGING, ...
                                                                                     //
-            request.RequestedShipment.PackageCount = "1";
-            //request.RequestedShipment.RequestedPackageLineItems
+            request.RequestedShipment.PackageCount = dr.ItemArray[20].ToString().Trim();
             // set HAL
             bool isHALShipment = false;
             //if (isHALShipment)
@@ -669,6 +687,8 @@ namespace FedExShipping
                     break;
                 }
             }
+            if (!_IsLineItemFound)
+                _FailReason = "Ohoo.... Line Item Not Found!!";
             return _IsLineItemFound;
         }
     }
