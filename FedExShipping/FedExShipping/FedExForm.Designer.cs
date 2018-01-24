@@ -222,7 +222,6 @@
             this.txtLblPath.Name = "txtLblPath";
             this.txtLblPath.Size = new System.Drawing.Size(492, 22);
             this.txtLblPath.TabIndex = 34;
-            this.txtLblPath.Text = "C:\\Users\\lenovo\\Desktop\\Resumes\\Mallesh\\Rasool Docs\\FedEx\\Labels\\";
             // 
             // FedExForm
             // 

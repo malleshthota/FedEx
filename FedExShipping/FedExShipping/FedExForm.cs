@@ -27,7 +27,7 @@ namespace FedExShipping
         bool _IsSucceded = false;
         string _FailReason = string.Empty;
         ProcessShipmentRequest childRequest = null;
-        SecondaryLineItems LineItemSecondValues = null;
+        List<SecondaryLineItems> listLineItemSecondValues = null;
 
         public FedExForm()
         {
@@ -244,7 +244,7 @@ namespace FedExShipping
         {
             // Set this to true to process a COD shipment and print a COD return Label
             bool isCodShipment = false;
-            LineItemSecondValues = null;
+            listLineItemSecondValues = null;
             ProcessShipmentRequest request = CreateShipmentRequest(isCodShipment, dr);
             string MasterTrackingNo = string.Empty;
             //
@@ -284,27 +284,30 @@ namespace FedExShipping
                         _IsSucceded = false;
                         _FailReason += reply.Notifications[0].Message;
                     }
-                    if (LineItemSecondValues != null && _IsSucceded)
+                    if (listLineItemSecondValues != null && _IsSucceded)
                     {
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = LineItemSecondValues.Weight;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = LineItemSecondValues.Length;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.Width;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = LineItemSecondValues.Height;
+                        foreach (SecondaryLineItems LineItemSecondValues in listLineItemSecondValues)
+                        {
+                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = LineItemSecondValues.Weight;
+                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = LineItemSecondValues.Length;
+                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.Width;
+                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = LineItemSecondValues.Height;
 
-                        childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
-                        childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = "2";
-                        ProcessShipmentReply replyChild = service.processShipment(childRequest);
-                        if (replyChild.HighestSeverity == NotificationSeverityType.SUCCESS ||
-                            replyChild.HighestSeverity == NotificationSeverityType.NOTE || replyChild.HighestSeverity == NotificationSeverityType.WARNING)
-                        {
-                            _IsSucceded = true;
-                            ShowShipmentReply(isCodShipment, replyChild, txtLblPath.Text);
-                        }
-                        else
-                        {
-                            _IsSucceded = false;
-                            _FailReason += reply.Notifications[0].Message;
+                            childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
+                            childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
+                            childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = LineItemSecondValues.SequenceNumber.ToString();
+                            ProcessShipmentReply replyChild = service.processShipment(childRequest);
+                            if (replyChild.HighestSeverity == NotificationSeverityType.SUCCESS ||
+                                replyChild.HighestSeverity == NotificationSeverityType.NOTE || replyChild.HighestSeverity == NotificationSeverityType.WARNING)
+                            {
+                                _IsSucceded = true;
+                                ShowShipmentReply(isCodShipment, replyChild, txtLblPath.Text);
+                            }
+                            else
+                            {
+                                _IsSucceded = false;
+                                _FailReason += reply.Notifications[0].Message;
+                            }
                         }
                     }
                     ShowNotifications(reply);
@@ -611,7 +614,7 @@ namespace FedExShipping
             LabelFile.Write(labelBuffer, 0, labelBuffer.Length);
             LabelFile.Close();
             // Display label in Acrobat
-            DisplayLabel(labelFileName);
+            //  DisplayLabel(labelFileName);
         }
 
         private void DisplayLabel(string labelFileName)
@@ -682,10 +685,10 @@ namespace FedExShipping
             {
                 if (Row.ItemArray[0].ToString().Trim() == dr.ItemArray[17].ToString().Trim())
                 {
-                    if (Convert.ToInt32(Row.ItemArray[1]) == 2)
+                    if (Convert.ToInt32(Row.ItemArray[1]) > 1)
                     {
                         childRequest = request;
-                        request.RequestedShipment.PackageCount = "2";
+                        request.RequestedShipment.PackageCount = Row.ItemArray[1].ToString();
                     }
                     _IsLineItemFound = true;
                     request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[1];
@@ -710,39 +713,21 @@ namespace FedExShipping
                     request.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[2].CustomerReferenceType = CustomerReferenceType.P_O_NUMBER;
                     request.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[2].Value = dr.ItemArray[0]?.ToString().Trim();
 
-                    if (Convert.ToInt32(Row.ItemArray[1]) == 2)
+                    if (Convert.ToInt32(Row.ItemArray[1]) > 1)
                     {
-                        LineItemSecondValues = new SecondaryLineItems
+                        listLineItemSecondValues = new List<SecondaryLineItems>();
+                        for (int i = 0; i < Convert.ToInt32(Row.ItemArray[1]) - 1; i++)
                         {
-                            Weight = Row.ItemArray[9].GetType().Name != "DBNull" ? Convert.ToInt32(Row.ItemArray[9]) : 0,
-                            Length = Row.ItemArray[6]?.ToString(),
-                            Width = Row.ItemArray[7]?.ToString(),
-                            Height = Row.ItemArray[8]?.ToString()
-                        };
-
-                        /*
-                        childRequest.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[1];
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0] = new RequestedPackageLineItem();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = "2";
-                        // Package weight information
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight = new Weight();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = Row.ItemArray[9].GetType().Name != "DBNull" ? Convert.ToInt32(Row.ItemArray[9]) : 0;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Units = WeightUnits.LB;
-                        //
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions = new Dimensions();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = Row.ItemArray[6]?.ToString();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = Row.ItemArray[7]?.ToString();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = Row.ItemArray[8]?.ToString();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Units = LinearUnits.IN;
-                        // Reference details
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences = new CustomerReference[3] { new CustomerReference(), new CustomerReference(), new CustomerReference() };
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[0].CustomerReferenceType = CustomerReferenceType.CUSTOMER_REFERENCE;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[0].Value = dr.ItemArray[0].ToString().Trim();
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[1].CustomerReferenceType = CustomerReferenceType.INVOICE_NUMBER;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[1].Value = "";
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[2].CustomerReferenceType = CustomerReferenceType.P_O_NUMBER;
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[2].Value = dr.ItemArray[0].ToString().Trim();
-                        */
+                            listLineItemSecondValues.Add(
+                         new SecondaryLineItems
+                         {
+                             Weight = Row.ItemArray[9 + (i * 4)].GetType().Name != "DBNull" ? Convert.ToInt32(Row.ItemArray[9 + (i * 4)]) : 0,
+                             Length = Row.ItemArray[6 + (i * 4)]?.ToString(),
+                             Width = Row.ItemArray[7 + (i * 4)]?.ToString(),
+                             Height = Row.ItemArray[8 + (i * 4)]?.ToString(),
+                             SequenceNumber = i + 2
+                         });
+                        }
                     }
                     break;
                 }
