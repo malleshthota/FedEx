@@ -27,7 +27,7 @@ namespace FedExShipping
         bool _IsSucceded = false;
         string _FailReason = string.Empty;
         ProcessShipmentRequest childRequest = null;
-        dynamic LineItemSecondValues = null;
+        SecondaryLineItems LineItemSecondValues = null;
 
         public FedExForm()
         {
@@ -275,7 +275,7 @@ namespace FedExShipping
                         reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
                     {
                         _IsSucceded = true;
-                        if (i == 1)
+                        if (i == 1)// Need to fix here for quantity 2 and Multiline itms issue
                             MasterTrackingNo = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
                         ShowShipmentReply(isCodShipment, reply, txtLblPath.Text);
                     }
@@ -286,10 +286,10 @@ namespace FedExShipping
                     }
                     if (LineItemSecondValues != null && _IsSucceded)
                     {
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = Convert.ToDecimal(LineItemSecondValues.GetType().GetProperty("Weight").GetValue(LineItemSecondValues, null));
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = Convert.ToString(LineItemSecondValues.GetType().GetProperty("Length").GetValue(LineItemSecondValues, null));
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.GetType().GetProperty("Width").GetValue(LineItemSecondValues, null);
-                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = Convert.ToString(LineItemSecondValues.GetType().GetProperty("Height").GetValue(LineItemSecondValues, null));
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = LineItemSecondValues.Weight;
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = LineItemSecondValues.Length;
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.Width;
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = LineItemSecondValues.Height;
 
                         childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
                         childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
@@ -712,7 +712,7 @@ namespace FedExShipping
 
                     if (Convert.ToInt32(Row.ItemArray[1]) == 2)
                     {
-                        LineItemSecondValues = new
+                        LineItemSecondValues = new SecondaryLineItems
                         {
                             Weight = Row.ItemArray[9].GetType().Name != "DBNull" ? Convert.ToInt32(Row.ItemArray[9]) : 0,
                             Length = Row.ItemArray[6]?.ToString(),
