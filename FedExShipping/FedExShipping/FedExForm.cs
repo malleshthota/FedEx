@@ -535,7 +535,7 @@ namespace FedExShipping
             {
                 for (int i = 0; i < TrackingIds.Length; i++)
                 {
-                    TrackingId += TrackingIds[i].TrackingNumber.ToString();
+                    TrackingId += TrackingIds[i].TrackingNumber.ToString() + ", ";
                     Console.WriteLine("Tracking # {0} Form ID {1}", TrackingIds[i].TrackingNumber, TrackingIds[i].FormId);
                 }
             }
