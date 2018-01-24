@@ -243,8 +243,9 @@ namespace FedExShipping
         {
             // Set this to true to process a COD shipment and print a COD return Label
             bool isCodShipment = false;
-            ProcessShipmentRequest request = CreateShipmentRequest(isCodShipment, dr);
             childRequest = null;
+            ProcessShipmentRequest request = CreateShipmentRequest(isCodShipment, dr);
+            string MasterTrackingNo = string.Empty;
             //
             ShipWebServiceClient.ShipServiceWebReference.ShipService service = new ShipWebServiceClient.ShipServiceWebReference.ShipService();
             if (usePropertyFile())
@@ -254,41 +255,53 @@ namespace FedExShipping
             //
             try
             {
-                if (dr.ItemArray[20].ToString().Trim() == "2")
-                    childRequest = request;
-
-                // Call the ship web service passing in a ProcessShipmentRequest and returning a ProcessShipmentReply
-                ProcessShipmentReply reply = service.processShipment(request);
-                if (reply.HighestSeverity == NotificationSeverityType.SUCCESS ||
-                    reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
+                for (int i = 1; i <= Convert.ToInt16(dr.ItemArray[20].ToString().Trim()); i++)
                 {
-                    _IsSucceded = true;
-                    ShowShipmentReply(isCodShipment, reply, txtLblPath.Text);
-                }
-                else
-                {
-                    _IsSucceded = false;
-                    _FailReason += reply.Notifications[0].Message;
-                }
-                if (childRequest != null && _IsSucceded)
-                {
-                    childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
-                    childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
-                    childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = "2";
-                    ProcessShipmentReply replyChild = service.processShipment(childRequest);
-                    if (replyChild.HighestSeverity == NotificationSeverityType.SUCCESS ||
-                        replyChild.HighestSeverity == NotificationSeverityType.NOTE || replyChild.HighestSeverity == NotificationSeverityType.WARNING)
+                    //childRequest = request;
+                    //request.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
+                    //request.RequestedShipment.MasterTrackingId.TrackingNumber = "0";
+                    // Call the ship web service passing in a ProcessShipmentRequest and returning a 
+                    //request.RequestedShipment.PackageCount = "2";
+                    if (i > 1)
+                    {
+                        request.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
+                        request.RequestedShipment.MasterTrackingId.TrackingNumber = MasterTrackingNo;
+                        request.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = i.ToString();
+                    }
+                    ProcessShipmentReply reply = service.processShipment(request);
+                    if (reply.HighestSeverity == NotificationSeverityType.SUCCESS ||
+                        reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
                     {
                         _IsSucceded = true;
-                        ShowShipmentReply(isCodShipment, replyChild, txtLblPath.Text);
+                        if (i == 1)
+                            MasterTrackingNo = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
+                        ShowShipmentReply(isCodShipment, reply, txtLblPath.Text);
                     }
                     else
                     {
                         _IsSucceded = false;
                         _FailReason += reply.Notifications[0].Message;
                     }
+                    if (childRequest != null && _IsSucceded)
+                    {
+                        childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
+                        childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = "2";
+                        ProcessShipmentReply replyChild = service.processShipment(childRequest);
+                        if (replyChild.HighestSeverity == NotificationSeverityType.SUCCESS ||
+                            replyChild.HighestSeverity == NotificationSeverityType.NOTE || replyChild.HighestSeverity == NotificationSeverityType.WARNING)
+                        {
+                            _IsSucceded = true;
+                            ShowShipmentReply(isCodShipment, replyChild, txtLblPath.Text);
+                        }
+                        else
+                        {
+                            _IsSucceded = false;
+                            _FailReason += reply.Notifications[0].Message;
+                        }
+                    }
+                    ShowNotifications(reply);
                 }
-                ShowNotifications(reply);
             }
             catch (SoapException e)
             {
