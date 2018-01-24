@@ -20,13 +20,14 @@ namespace FedExShipping
     {
         bool _IsSaved = false, _IsVoid = false;
         string Remarks = "";
-        static DataTable dtLineItemData = null;
+        DataTable dtLineItemData = null;
         DataTable table;
         string ExecStatusinfo = string.Empty;
-        static string TrackingId = string.Empty;
-        static bool _IsSucceded = false;
-        static string _FailReason = string.Empty;
-        static ProcessShipmentRequest childRequest = null;
+        string TrackingId = string.Empty;
+        bool _IsSucceded = false;
+        string _FailReason = string.Empty;
+        ProcessShipmentRequest childRequest = null;
+        dynamic LineItemSecondValues = null;
 
         public FedExForm()
         {
@@ -243,7 +244,7 @@ namespace FedExShipping
         {
             // Set this to true to process a COD shipment and print a COD return Label
             bool isCodShipment = false;
-            childRequest = null;
+            LineItemSecondValues = null;
             ProcessShipmentRequest request = CreateShipmentRequest(isCodShipment, dr);
             string MasterTrackingNo = string.Empty;
             //
@@ -268,6 +269,7 @@ namespace FedExShipping
                         request.RequestedShipment.MasterTrackingId.TrackingNumber = MasterTrackingNo;
                         request.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = i.ToString();
                     }
+
                     ProcessShipmentReply reply = service.processShipment(request);
                     if (reply.HighestSeverity == NotificationSeverityType.SUCCESS ||
                         reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
@@ -282,8 +284,13 @@ namespace FedExShipping
                         _IsSucceded = false;
                         _FailReason += reply.Notifications[0].Message;
                     }
-                    if (childRequest != null && _IsSucceded)
+                    if (LineItemSecondValues != null && _IsSucceded)
                     {
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = Convert.ToDecimal(LineItemSecondValues.GetType().GetProperty("Weight").GetValue(LineItemSecondValues, null));
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = Convert.ToString(LineItemSecondValues.GetType().GetProperty("Length").GetValue(LineItemSecondValues, null));
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.GetType().GetProperty("Width").GetValue(LineItemSecondValues, null);
+                        childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = Convert.ToString(LineItemSecondValues.GetType().GetProperty("Height").GetValue(LineItemSecondValues, null));
+
                         childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
                         childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
                         childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = "2";
@@ -315,7 +322,7 @@ namespace FedExShipping
             //Console.ReadKey();
         }
 
-        private static WebAuthenticationDetail SetWebAuthenticationDetail()
+        private WebAuthenticationDetail SetWebAuthenticationDetail()
         {
             WebAuthenticationDetail wad = new WebAuthenticationDetail();
             wad.UserCredential = new WebAuthenticationCredential();
@@ -337,7 +344,7 @@ namespace FedExShipping
             return wad;
         }
 
-        private static ProcessShipmentRequest CreateShipmentRequest(bool isCodShipment, DataRow dr)
+        private ProcessShipmentRequest CreateShipmentRequest(bool isCodShipment, DataRow dr)
         {
             // Build the ShipmentRequest
             ProcessShipmentRequest request = new ProcessShipmentRequest();
@@ -373,7 +380,7 @@ namespace FedExShipping
             return request;
         }
 
-        private static void SetShipmentDetails(ProcessShipmentRequest request, DataRow dr)
+        private void SetShipmentDetails(ProcessShipmentRequest request, DataRow dr)
         {
             request.RequestedShipment = new RequestedShipment();
             request.RequestedShipment.ShipTimestamp = DateTime.Now; // Ship date and time
@@ -387,7 +394,7 @@ namespace FedExShipping
             //    SetHAL(request);
         }
 
-        private static void SetSender(ProcessShipmentRequest request)
+        private void SetSender(ProcessShipmentRequest request)
         {
             request.RequestedShipment.Shipper = new Party();
             request.RequestedShipment.Shipper.Contact = new Contact();
@@ -404,7 +411,7 @@ namespace FedExShipping
 
         }
 
-        private static void SetRecipient(ProcessShipmentRequest request, DataRow dr)
+        private void SetRecipient(ProcessShipmentRequest request, DataRow dr)
         {
             request.RequestedShipment.Recipient = new Party();
             request.RequestedShipment.Recipient.Contact = new Contact();
@@ -420,7 +427,7 @@ namespace FedExShipping
             request.RequestedShipment.Recipient.Address.CountryCode = "US";
         }
 
-        private static void SetPayment(ProcessShipmentRequest request)
+        private void SetPayment(ProcessShipmentRequest request)
         {
             request.RequestedShipment.ShippingChargesPayment = new Payment();
             request.RequestedShipment.ShippingChargesPayment.PaymentType = PaymentType.SENDER;
@@ -437,7 +444,7 @@ namespace FedExShipping
             request.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.Address.CountryCode = "US";
         }
 
-        private static void SetLabelDetails(ProcessShipmentRequest request)
+        private void SetLabelDetails(ProcessShipmentRequest request)
         {
             request.RequestedShipment.LabelSpecification = new LabelSpecification();
             request.RequestedShipment.LabelSpecification.ImageType = ShippingDocumentImageType.PDF; // Image types PDF, PNG, DPL, ...
@@ -445,7 +452,7 @@ namespace FedExShipping
             request.RequestedShipment.LabelSpecification.LabelFormatType = LabelFormatType.COMMON2D;
         }
 
-        private static void SetHAL(ProcessShipmentRequest request)
+        private void SetHAL(ProcessShipmentRequest request)
         {
             request.RequestedShipment.SpecialServicesRequested = new ShipmentSpecialServicesRequested();
             request.RequestedShipment.SpecialServicesRequested.SpecialServiceTypes = new ShipmentSpecialServiceType[1];
@@ -466,7 +473,7 @@ namespace FedExShipping
             request.RequestedShipment.SpecialServicesRequested.HoldAtLocationDetail.LocationContactAndAddress.Address.CountryCode = "US";
         }
 
-        private static void SetCOD(ProcessShipmentRequest request)
+        private void SetCOD(ProcessShipmentRequest request)
         {
             request.RequestedShipment.RequestedPackageLineItems[0].SpecialServicesRequested = new PackageSpecialServicesRequested();
             request.RequestedShipment.RequestedPackageLineItems[0].SpecialServicesRequested.SpecialServiceTypes = new PackageSpecialServiceType[1];
@@ -479,7 +486,7 @@ namespace FedExShipping
             request.RequestedShipment.RequestedPackageLineItems[0].SpecialServicesRequested.CodDetail.CodCollectionAmount.Currency = "USD";
         }
 
-        private static void ShowShipmentReply(bool isCodShipment, ProcessShipmentReply reply, string lablePath)
+        private void ShowShipmentReply(bool isCodShipment, ProcessShipmentReply reply, string lablePath)
         {
             Console.WriteLine("Shipment Reply details:");
             Console.WriteLine("Package details\n");
@@ -501,7 +508,7 @@ namespace FedExShipping
             ShowPackageRouteDetails(reply.CompletedShipmentDetail.OperationalDetail);
         }
 
-        private static void ShowShipmentLabels(bool isCodShipment, CompletedShipmentDetail completedShipmentDetail, CompletedPackageDetail packageDetail
+        private void ShowShipmentLabels(bool isCodShipment, CompletedShipmentDetail completedShipmentDetail, CompletedPackageDetail packageDetail
             , string lablePath)
         {
             if (null != packageDetail.Label.Parts[0].Image)
@@ -517,7 +524,7 @@ namespace FedExShipping
             }
         }
 
-        private static void ShowTrackingDetails(TrackingId[] TrackingIds)
+        private void ShowTrackingDetails(TrackingId[] TrackingIds)
         {
             // Tracking information for each package
             Console.WriteLine("Tracking details");
@@ -531,7 +538,7 @@ namespace FedExShipping
             }
         }
 
-        private static void ShowPackageRateDetails(PackageRateDetail[] PackageRateDetails)
+        private void ShowPackageRateDetails(PackageRateDetail[] PackageRateDetails)
         {
             foreach (PackageRateDetail ratedPackage in PackageRateDetails)
             {
@@ -553,7 +560,7 @@ namespace FedExShipping
             }
         }
 
-        private static void ShowBarcodeDetails(PackageBarcodes barcodes)
+        private void ShowBarcodeDetails(PackageBarcodes barcodes)
         {
             // Barcode information for each package
             Console.WriteLine("\nBarcode details");
@@ -577,7 +584,7 @@ namespace FedExShipping
             }
         }
 
-        private static void ShowPackageRouteDetails(ShipmentOperationalDetail routingDetail)
+        private void ShowPackageRouteDetails(ShipmentOperationalDetail routingDetail)
         {
             Console.WriteLine("\nRouting details");
             Console.WriteLine("URSA prefix {0} suffix {1}", routingDetail.UrsaPrefixCode, routingDetail.UrsaSuffixCode);
@@ -597,7 +604,7 @@ namespace FedExShipping
             }
         }
 
-        private static void SaveLabel(string labelFileName, byte[] labelBuffer)
+        private void SaveLabel(string labelFileName, byte[] labelBuffer)
         {
             // Save label buffer to file
             FileStream LabelFile = new FileStream(labelFileName, FileMode.Create);
@@ -607,7 +614,7 @@ namespace FedExShipping
             DisplayLabel(labelFileName);
         }
 
-        private static void DisplayLabel(string labelFileName)
+        private void DisplayLabel(string labelFileName)
         {
             System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo(labelFileName);
             info.UseShellExecute = true;
@@ -615,7 +622,7 @@ namespace FedExShipping
             System.Diagnostics.Process.Start(info);
         }
 
-        private static void ShowNotifications(ProcessShipmentReply reply)
+        private void ShowNotifications(ProcessShipmentReply reply)
         {
             Console.WriteLine("Notifications");
             for (int i = 0; i < reply.Notifications.Length; i++)
@@ -629,12 +636,12 @@ namespace FedExShipping
             }
         }
 
-        private static bool usePropertyFile() //Set to true for common properties to be set with getProperty function.
+        private bool usePropertyFile() //Set to true for common properties to be set with getProperty function.
         {
             return getProperty("usefile").Equals("True");
         }
 
-        private static String getProperty(String propertyname) //Sets common properties for testing purposes.
+        private String getProperty(String propertyname) //Sets common properties for testing purposes.
         {
             try
             {
@@ -667,7 +674,7 @@ namespace FedExShipping
 
         }
 
-        public static bool SetPackageLineItems(ProcessShipmentRequest request, DataRow dr)
+        public bool SetPackageLineItems(ProcessShipmentRequest request, DataRow dr)
         {
             bool _IsLineItemFound = false;
 
@@ -705,6 +712,15 @@ namespace FedExShipping
 
                     if (Convert.ToInt32(Row.ItemArray[1]) == 2)
                     {
+                        LineItemSecondValues = new
+                        {
+                            Weight = Row.ItemArray[9].GetType().Name != "DBNull" ? Convert.ToInt32(Row.ItemArray[9]) : 0,
+                            Length = Row.ItemArray[6]?.ToString(),
+                            Width = Row.ItemArray[7]?.ToString(),
+                            Height = Row.ItemArray[8]?.ToString()
+                        };
+
+                        /*
                         childRequest.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[1];
                         childRequest.RequestedShipment.RequestedPackageLineItems[0] = new RequestedPackageLineItem();
                         childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = "2";
@@ -726,6 +742,7 @@ namespace FedExShipping
                         childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[1].Value = "";
                         childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[2].CustomerReferenceType = CustomerReferenceType.P_O_NUMBER;
                         childRequest.RequestedShipment.RequestedPackageLineItems[0].CustomerReferences[2].Value = dr.ItemArray[0].ToString().Trim();
+                        */
                     }
                     break;
                 }
