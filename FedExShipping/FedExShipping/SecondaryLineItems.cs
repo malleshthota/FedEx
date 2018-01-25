@@ -13,6 +13,14 @@ namespace FedExShipping
         public string Width { get; set; }
         public string Height { get; set; }
         public int SequenceNumber { get; set; }
+    }
 
+    public class PrimaryLineItem
+    {
+        public decimal Weight { get; set; }
+        public string Length { get; set; }
+        public string Width { get; set; }
+        public string Height { get; set; }
+        public int SequenceNumber { get; set; }
     }
 }

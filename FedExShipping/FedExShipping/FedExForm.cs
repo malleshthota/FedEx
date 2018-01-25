@@ -28,6 +28,7 @@ namespace FedExShipping
         string _FailReason = string.Empty;
         ProcessShipmentRequest childRequest = null;
         List<SecondaryLineItems> listLineItemSecondValues = null;
+        PrimaryLineItem primaryLineItem = null;
 
         public FedExForm()
         {
@@ -245,6 +246,7 @@ namespace FedExShipping
             // Set this to true to process a COD shipment and print a COD return Label
             bool isCodShipment = false;
             listLineItemSecondValues = null;
+            primaryLineItem = null;
             ProcessShipmentRequest request = CreateShipmentRequest(isCodShipment, dr);
             string MasterTrackingNo = string.Empty;
             //
@@ -258,57 +260,10 @@ namespace FedExShipping
             {
                 for (int i = 1; i <= Convert.ToInt16(dr.ItemArray[20].ToString().Trim()); i++)
                 {
-                    //childRequest = request;
-                    //request.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
-                    //request.RequestedShipment.MasterTrackingId.TrackingNumber = "0";
-                    // Call the ship web service passing in a ProcessShipmentRequest and returning a 
-                    //request.RequestedShipment.PackageCount = "2";
-                    if (i > 1)
-                    {
-                        request.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
-                        request.RequestedShipment.MasterTrackingId.TrackingNumber = MasterTrackingNo;
-                        request.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = i.ToString();
-                    }
-
-                    ProcessShipmentReply reply = service.processShipment(request);
-                    if (reply.HighestSeverity == NotificationSeverityType.SUCCESS ||
-                        reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
-                    {
-                        _IsSucceded = true;
-                        if (i == 1)// Need to fix here for quantity 2 and Multiline itms issue
-                            MasterTrackingNo = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
-                        ShowShipmentReply(isCodShipment, reply, txtLblPath.Text);
-                    }
-                    else
-                    {
-                        _IsSucceded = false;
-                        _FailReason += reply.Notifications[0].Message;
-                    }
+                    ProcessShipmentReply reply = ParentLineItemOperations(isCodShipment, request, ref MasterTrackingNo, service, i);
                     if (listLineItemSecondValues != null && _IsSucceded)
                     {
-                        foreach (SecondaryLineItems LineItemSecondValues in listLineItemSecondValues)
-                        {
-                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = LineItemSecondValues.Weight;
-                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = LineItemSecondValues.Length;
-                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.Width;
-                            childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = LineItemSecondValues.Height;
-
-                            childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
-                            childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
-                            childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = LineItemSecondValues.SequenceNumber.ToString();
-                            ProcessShipmentReply replyChild = service.processShipment(childRequest);
-                            if (replyChild.HighestSeverity == NotificationSeverityType.SUCCESS ||
-                                replyChild.HighestSeverity == NotificationSeverityType.NOTE || replyChild.HighestSeverity == NotificationSeverityType.WARNING)
-                            {
-                                _IsSucceded = true;
-                                ShowShipmentReply(isCodShipment, replyChild, txtLblPath.Text);
-                            }
-                            else
-                            {
-                                _IsSucceded = false;
-                                _FailReason += reply.Notifications[0].Message;
-                            }
-                        }
+                        ChildLineItemOperations(isCodShipment, service, reply);
                     }
                     ShowNotifications(reply);
                 }
@@ -321,8 +276,68 @@ namespace FedExShipping
             {
                 Console.WriteLine(e.Message);
             }
-            //Console.WriteLine("\nPress any key to quit !");
-            //Console.ReadKey();
+        }
+
+        private ProcessShipmentReply ParentLineItemOperations(bool isCodShipment, ProcessShipmentRequest request, ref string MasterTrackingNo, ShipService service, int i)
+        {
+            if (i > 1)
+            {
+                if (primaryLineItem != null)
+                {
+                    request.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = primaryLineItem.Weight;
+                    request.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = primaryLineItem.Length;
+                    request.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = primaryLineItem.Width;
+                    request.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = primaryLineItem.Height;
+
+                }
+                request.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
+                request.RequestedShipment.MasterTrackingId.TrackingNumber = MasterTrackingNo;
+                request.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = i.ToString();
+            }
+
+            ProcessShipmentReply reply = service.processShipment(request);
+            if (reply.HighestSeverity == NotificationSeverityType.SUCCESS ||
+                reply.HighestSeverity == NotificationSeverityType.NOTE || reply.HighestSeverity == NotificationSeverityType.WARNING)
+            {
+                _IsSucceded = true;
+                if (i == 1)// Need to fix here for quantity 2 and Multiline itms issue
+                    MasterTrackingNo = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
+                ShowShipmentReply(isCodShipment, reply, txtLblPath.Text);
+            }
+            else
+            {
+                _IsSucceded = false;
+                _FailReason += reply.Notifications[0].Message;
+            }
+
+            return reply;
+        }
+
+        private void ChildLineItemOperations(bool isCodShipment, ShipService service, ProcessShipmentReply reply)
+        {
+            foreach (SecondaryLineItems LineItemSecondValues in listLineItemSecondValues)
+            {
+                childRequest.RequestedShipment.RequestedPackageLineItems[0].Weight.Value = LineItemSecondValues.Weight;
+                childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Length = LineItemSecondValues.Length;
+                childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Width = LineItemSecondValues.Width;
+                childRequest.RequestedShipment.RequestedPackageLineItems[0].Dimensions.Height = LineItemSecondValues.Height;
+
+                childRequest.RequestedShipment.MasterTrackingId = new ShipWebServiceClient.ShipServiceWebReference.TrackingId();
+                childRequest.RequestedShipment.MasterTrackingId.TrackingNumber = reply.CompletedShipmentDetail.MasterTrackingId.TrackingNumber;
+                childRequest.RequestedShipment.RequestedPackageLineItems[0].SequenceNumber = LineItemSecondValues.SequenceNumber.ToString();
+                ProcessShipmentReply replyChild = service.processShipment(childRequest);
+                if (replyChild.HighestSeverity == NotificationSeverityType.SUCCESS ||
+                    replyChild.HighestSeverity == NotificationSeverityType.NOTE || replyChild.HighestSeverity == NotificationSeverityType.WARNING)
+                {
+                    _IsSucceded = true;
+                    ShowShipmentReply(isCodShipment, replyChild, txtLblPath.Text);
+                }
+                else
+                {
+                    _IsSucceded = false;
+                    _FailReason += reply.Notifications[0].Message;
+                }
+            }
         }
 
         private WebAuthenticationDetail SetWebAuthenticationDetail()
@@ -355,8 +370,8 @@ namespace FedExShipping
             request.WebAuthenticationDetail = SetWebAuthenticationDetail();
             //
             request.ClientDetail = new ClientDetail();
-            request.ClientDetail.AccountNumber = "642330942"; // Replace "XXX" with the client's account number
-            request.ClientDetail.MeterNumber = "111908162"; // Replace "XXX" with the client's meter number
+            request.ClientDetail.AccountNumber = "642330942";
+            request.ClientDetail.MeterNumber = "111908162";
             if (usePropertyFile()) //Set values from a file for testing purposes
             {
                 request.ClientDetail.AccountNumber = getProperty("accountnumber");
@@ -689,6 +704,17 @@ namespace FedExShipping
                     {
                         childRequest = request;
                         request.RequestedShipment.PackageCount = Row.ItemArray[1].ToString();
+                    }
+                    if (Convert.ToInt16(dr.ItemArray[20].ToString().Trim()) > 1)
+                    {
+                        primaryLineItem = new PrimaryLineItem
+                        {
+                            Weight = Row.ItemArray[5].GetType().Name != "DBNull" ? Convert.ToInt32(Row.ItemArray[5]) : 0,
+                            Length = Row.ItemArray[2]?.ToString(),
+                            Width = Row.ItemArray[3]?.ToString(),
+                            Height = Row.ItemArray[4]?.ToString(),
+                            SequenceNumber = 1
+                        };
                     }
                     _IsLineItemFound = true;
                     request.RequestedShipment.RequestedPackageLineItems = new RequestedPackageLineItem[1];
