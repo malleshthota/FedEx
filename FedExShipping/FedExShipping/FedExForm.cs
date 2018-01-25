@@ -80,6 +80,22 @@ namespace FedExShipping
             }
         }
 
+        private void btnLabelPath_Click(object sender, EventArgs e)
+        {
+            DialogResult ResultPathResult = folderBrowserDialog1.ShowDialog(); // Show the dialog.
+            if (ResultPathResult == DialogResult.OK) // Test result.
+            {
+                txtLblPath.Text = folderBrowserDialog1.SelectedPath;
+                string labelPath = txtLblPath.Text.Trim();
+                char lastChar = labelPath[labelPath.Length - 1];
+                if (lastChar.ToString() != "\\")
+                {
+                    labelPath = labelPath + "\\";
+                }
+                txtLblPath.Text = labelPath;
+            }
+        }
+
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             try
@@ -685,11 +701,6 @@ namespace FedExShipping
                 Console.WriteLine("Property {0} set to default 'XXX'", propertyname);
                 return "XXX";
             }
-        }
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-
         }
 
         public bool SetPackageLineItems(ProcessShipmentRequest request, DataRow dr)

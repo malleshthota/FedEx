@@ -46,6 +46,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.txtLblPath = new System.Windows.Forms.TextBox();
             this.pageSetupDialog1 = new System.Windows.Forms.PageSetupDialog();
+            this.btnLabelPath = new System.Windows.Forms.Button();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -90,7 +92,7 @@
             this.btnLineItem.BackColor = System.Drawing.Color.Indigo;
             this.btnLineItem.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnLineItem.ForeColor = System.Drawing.Color.DarkOrange;
-            this.btnLineItem.Location = new System.Drawing.Point(484, 209);
+            this.btnLineItem.Location = new System.Drawing.Point(497, 215);
             this.btnLineItem.Name = "btnLineItem";
             this.btnLineItem.Size = new System.Drawing.Size(137, 37);
             this.btnLineItem.TabIndex = 29;
@@ -111,7 +113,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Verdana", 9.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(24, 226);
+            this.label4.Location = new System.Drawing.Point(13, 227);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(115, 16);
             this.label4.TabIndex = 27;
@@ -168,7 +170,7 @@
             this.btnBrowse.BackColor = System.Drawing.Color.Indigo;
             this.btnBrowse.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnBrowse.ForeColor = System.Drawing.Color.DarkOrange;
-            this.btnBrowse.Location = new System.Drawing.Point(484, 158);
+            this.btnBrowse.Location = new System.Drawing.Point(497, 158);
             this.btnBrowse.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(137, 34);
@@ -212,16 +214,29 @@
             this.label5.TabIndex = 33;
             this.label5.Text = "Labels Path";
             this.label5.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
             // txtLblPath
             // 
             this.txtLblPath.Font = new System.Drawing.Font("Verdana", 9.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtLblPath.ForeColor = System.Drawing.Color.Blue;
-            this.txtLblPath.Location = new System.Drawing.Point(134, 284);
+            this.txtLblPath.Location = new System.Drawing.Point(134, 283);
+            this.txtLblPath.Multiline = true;
             this.txtLblPath.Name = "txtLblPath";
-            this.txtLblPath.Size = new System.Drawing.Size(492, 22);
+            this.txtLblPath.Size = new System.Drawing.Size(342, 42);
             this.txtLblPath.TabIndex = 34;
+            // 
+            // btnLabelPath
+            // 
+            this.btnLabelPath.BackColor = System.Drawing.Color.Indigo;
+            this.btnLabelPath.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnLabelPath.ForeColor = System.Drawing.Color.DarkOrange;
+            this.btnLabelPath.Location = new System.Drawing.Point(497, 283);
+            this.btnLabelPath.Name = "btnLabelPath";
+            this.btnLabelPath.Size = new System.Drawing.Size(137, 37);
+            this.btnLabelPath.TabIndex = 35;
+            this.btnLabelPath.Text = "Set Path";
+            this.btnLabelPath.UseVisualStyleBackColor = false;
+            this.btnLabelPath.Click += new System.EventHandler(this.btnLabelPath_Click);
             // 
             // FedExForm
             // 
@@ -229,6 +244,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(1249, 505);
+            this.Controls.Add(this.btnLabelPath);
             this.Controls.Add(this.txtLblPath);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label1);
@@ -273,6 +289,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtLblPath;
         private System.Windows.Forms.PageSetupDialog pageSetupDialog1;
+        private System.Windows.Forms.Button btnLabelPath;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
     }
 }
 
