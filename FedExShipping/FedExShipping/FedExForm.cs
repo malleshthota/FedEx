@@ -145,8 +145,8 @@ namespace FedExShipping
                         if (dr.ItemArray[22].ToString().Trim() == string.Empty)
                             continue;
 
-                        if (dr.ItemArray[23].ToString().Trim() == "FedEx Home Delivery" ||
-                            dr.ItemArray[23].ToString().Trim().ToLower() == "fedex ground")
+                        if (dr.ItemArray[23].ToString().Trim().ToLower().IndexOf("fedex home delivery") >= 0 ||
+                            dr.ItemArray[23].ToString().Trim().ToLower().IndexOf("fedex ground") >= 0)
                         {
                             try
                             {
