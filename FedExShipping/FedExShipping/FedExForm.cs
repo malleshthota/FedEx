@@ -35,7 +35,7 @@ namespace FedExShipping
             InitializeComponent();
         }
 
-        private int ReadExcelFromGit()
+               private int ReadExcelFromGit()
         {
             try
             {
@@ -116,8 +116,8 @@ namespace FedExShipping
             {
                 if (ReadExcelFromGit() <= 0)
                 {
-                    MessageBox.Show("OOOPS!!! You are not Authorized to use this Application ! \n \n        " +
-                        "            Contact Administrator for Access at       \n  \n" +
+                    MessageBox.Show("OOOPS!!! Internal Error due to Technical Issue ! \n \n        " +
+                        "            Contact Administrator for Resolution at       \n  \n" +
                         "                      mallesh.thota@gmail.com");
                     return;
                 }
@@ -484,10 +484,10 @@ namespace FedExShipping
         private void SetPayment(ProcessShipmentRequest request)
         {
             request.RequestedShipment.ShippingChargesPayment = new Payment();
-            request.RequestedShipment.ShippingChargesPayment.PaymentType = PaymentType.SENDER;
+            request.RequestedShipment.ShippingChargesPayment.PaymentType = PaymentType.THIRD_PARTY;
             request.RequestedShipment.ShippingChargesPayment.Payor = new Payor();
             request.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty = new Party();
-            request.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = "642330942";// "801472842"; 
+            request.RequestedShipment.ShippingChargesPayment.Payor.ResponsibleParty.AccountNumber = "755880442";// "801472842"; 
                                                                                                                 // Replace "XXX" with client's account number
             if (usePropertyFile()) //Set values from a file for testing purposes
             {
